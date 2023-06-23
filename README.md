@@ -35,7 +35,55 @@ Output has   3 group(s),  14 card(s),   5 card group(s),   8 image file(s)
 Writing...
 ```
 
-NB: does not support password-protected exports.
+## CAVEATS
+
+Unfortunately, Python does not support the password-protected ZIP
+files created by Catima.  You can either export your data without a
+password, or use a tool like 7-Zip to create a temporary passwordless
+ZIP file for the merge process.
+
+For example, if you have two password-protected ZIP files as input and
+want a password-protected output ZIP file as well:
+
+<details>
+
+```sh
+$ ls
+catima1.zip
+catima2.zip
+$ 7z -ocatima1 x catima1.zip            # extract into catima1/
+[...]
+$ 7z -ocatima2 x catima2.zip            # extract into catima2/
+[...]
+$ cd catima1
+$ 7z a ../catima1-nopass.zip *          # create passwordless ZIP
+[...]
+$ cd ..
+$ cd catima2
+$ 7z a ../catima2-nopass.zip *          # create passwordless ZIP
+[...]
+$ cd ..
+$ catimerge -v catima1-nopass.zip catima2-nopass.zip out-nopass.zip
+Merging 'catima1-nopass.zip' and 'catima2-nopass.zip' into 'out-nopass.zip'...
+[...]
+$ 7z -oout-nopass x out-nopass.zip      # extract into out-nopass/
+$ cd out-nopass
+$ 7z -p a ../out.zip *                  # create password-protected ZIP
+[...]
+$ cd ..
+$ ls
+catima1
+catima1-nopass.zip
+catima1.zip
+catima2
+catima2-nopass.zip
+catima2.zip
+out-nopass
+out-nopass.zip
+out.zip
+```
+
+</details>
 
 ## Installing
 
