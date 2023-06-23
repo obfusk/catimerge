@@ -1,0 +1,10 @@
+__pycache__
+
+/build
+/dist
+/catimerge.egg-info
+
+.coverage
+/htmlcov
+
+/.tmp
