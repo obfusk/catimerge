@@ -189,9 +189,13 @@ def parse_v2(fh: TextIO) -> ExportV2:
         elif row:
             records[0].append(row)
         else:
+            if len(keys) < 2:
+                raise Error("Too many sections")
             header = None
             keys = keys[1:]
             records = records[1:]
+    if len(keys) > 1:
+        raise Error("Too few sections")
     return export
 
 
