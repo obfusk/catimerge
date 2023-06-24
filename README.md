@@ -24,6 +24,18 @@
 Merge two [Catima](https://catima.app) `.zip` exports.
 
 ```sh
+$ catimerge --help
+usage: catimerge [-h] [-v] [--version] FIRST_ZIP SECOND_ZIP OUTPUT_ZIP
+
+positional arguments:
+  FIRST_ZIP
+  SECOND_ZIP
+  OUTPUT_ZIP
+
+options:
+  -h, --help     show this help message and exit
+  -v, --verbose
+  --version      show program's version number and exit
 $ catimerge -v catima1.zip catima2.zip out.zip
 Merging 'catima1.zip' and 'catima2.zip' into 'out.zip'...
 Parsing...
