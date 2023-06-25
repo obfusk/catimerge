@@ -3,14 +3,18 @@ PYTHON    ?= python3
 
 export PYTHONWARNINGS := default
 
-.PHONY: all install test lint lint-extra clean cleanup
+.PHONY: all install test doctest lint lint-extra clean cleanup
 
 all:
 
 install:
 	$(PYTHON) -mpip install -e .
 
-test: lint lint-extra
+test: doctest lint lint-extra
+
+doctest:
+	# NB: uses test/*.zip
+	$(PYTHON) -m doctest catimerge/__init__.py
 
 lint:
 	flake8 catimerge/__init__.py

@@ -5,6 +5,28 @@
 
 r"""
 Merge two catima.zip exports.
+
+$ catimerge --help
+usage: catimerge [-h] [-v] [--version] FIRST_ZIP SECOND_ZIP OUTPUT_ZIP
+
+positional arguments:
+  FIRST_ZIP
+  SECOND_ZIP
+  OUTPUT_ZIP
+
+options:
+  -h, --help     show this help message and exit
+  -v, --verbose
+  --version      show program's version number and exit
+$ catimerge -v catima1.zip catima2.zip out.zip
+Merging 'catima1.zip' and 'catima2.zip' into 'out.zip'...
+Parsing...
+Version: 2
+ZIP #1 has   1 group(s),   9 card(s),   2 card group(s),   5 image file(s)
+ZIP #2 has   2 group(s),   5 card(s),   3 card group(s),   3 image file(s)
+Merging...
+Output has   3 group(s),  14 card(s),   5 card group(s),   8 image file(s)
+Writing...
 """
 
 import csv
@@ -26,7 +48,6 @@ class Error(Exception):
 @dataclass
 class Export:
     """Export."""
-
     @property
     def version(self) -> int:
         raise NotImplementedError
@@ -35,7 +56,6 @@ class Export:
 @dataclass
 class ExportV2(Export):
     """V2 export."""
-
     groups_keys: List[str] = field(default_factory=list)
     groups: List[List[str]] = field(default_factory=list)
     cards_keys: List[str] = field(default_factory=list)
@@ -74,7 +94,65 @@ def merge(e1: Export, e2: Export, zf1: zipfile.ZipFile, zf2: zipfile.ZipFile,
 
 def merge_v2(e1: ExportV2, e2: ExportV2, zf1: zipfile.ZipFile, zf2: zipfile.ZipFile,
              output_zip: str, *, verbose: bool = False) -> None:
-    """Merge two V2 exports."""
+    r"""
+    Merge two V2 exports.
+
+    >>> import os, tempfile
+    >>> zf1 = zipfile.ZipFile("test/catima1.zip")
+    >>> zf2 = zipfile.ZipFile("test/catima2.zip")
+    >>> for info in zf1.infolist():
+    ...     print(f"{info.CRC:08x} {info.filename}")
+    c21ab654 catima.csv
+    3ba1ef60 card_2_icon.png
+    aad741e5 card_1_front.png
+    33d945fd card_1_icon.png
+    >>> for info in zf2.infolist():
+    ...     print(f"{info.CRC:08x} {info.filename}")
+    3d100805 catima.csv
+    225e333a card_1_icon.png
+    d869a610 card_2_front.png
+    >>> e1 = parse(zf1)
+    >>> e2 = parse(zf2)
+    >>> with tempfile.TemporaryDirectory() as tmpdir:
+    ...     out = os.path.join(tmpdir, "out.zip")
+    ...     merge(e1, e2, zf1, zf2, out, verbose=True)
+    ...     zfo = zipfile.ZipFile(out)
+    ...     for info in zfo.infolist():
+    ...         print(f"{info.CRC:08x} {info.filename}")
+    ...     r = parse(zfo)
+    ...     r.groups_keys
+    ...     r.cards_keys
+    ...     r.card_groups_keys
+    ...     r.groups
+    ...     for c in r.cards: print(c)
+    ...     r.card_groups
+    ...     r.image_files
+    Version: 2
+    ZIP #1 has   2 group(s),   4 card(s),   3 card group(s),   3 image file(s)
+    ZIP #2 has   2 group(s),   2 card(s),   2 card group(s),   2 image file(s)
+    Merging...
+    Output has   3 group(s),   6 card(s),   5 card group(s),   5 image file(s)
+    Writing...
+    9c69bd23 catima.csv
+    3ba1ef60 card_2_icon.png
+    aad741e5 card_1_front.png
+    33d945fd card_1_icon.png
+    225e333a card_5_icon.png
+    d869a610 card_6_front.png
+    ['_id']
+    ['_id', 'store', 'note', 'validfrom', 'expiry', 'balance', 'balancetype', 'cardid', 'barcodeid', 'barcodetype', 'headercolor', 'starstatus', 'lastused', 'archive']
+    ['cardId', 'groupId']
+    [['"two\''], ['one'], ['three']]
+    ['2', 'bar', '', '', '', '0', '', ' bar " ', '', 'CODE_128', '-2092896', '0', '1687700491', '0']
+    ['3', 'baz', '', '', '', '0', '', '12345678901234567890', '', 'DATA_MATRIX', '-14642227', '0', '1687700517', '0']
+    ['1', 'foo', '', '', '', '5', 'JPY', 'foo', '', 'AZTEC', '-2092896', '0', '1687700411', '0']
+    ['4', 'qux', '', '', '', '0', '', 'foo\nbar\nbaz\nhttps://example.com', '', 'QR_CODE', '-14642227', '0', '1687700622', '0']
+    ['5', 'baz', '', '', '', '0', '', 'foo\nbar\nbaz"', '', 'PDF_417', '-2092896', '0', '1687702090', '0']
+    ['6', 'quux', 'this\nis\na\n"note"\n\nhttps://catima.app', '', '1710370800000', '0', '', '123456789012', '', 'UPC_A', '-416706', '0', '1687700899', '0']
+    [['2', '"two\''], ['3', '"two\''], ['1', 'one'], ['5', 'one'], ['5', 'three']]
+    ['card_2_icon.png', 'card_1_front.png', 'card_1_icon.png', 'card_5_icon.png', 'card_6_front.png']
+
+    """
     if verbose:
         print("Version: 2")
         print(f"ZIP #1 has {len(e1.groups):3d} group(s), "
@@ -176,7 +254,48 @@ def parse(zf: zipfile.ZipFile) -> Export:
 
 # FIXME: handle malformatted files
 def parse_v2(fh: TextIO) -> ExportV2:
-    """Parse V2 catima.csv (after version + blank line)."""
+    r"""
+    Parse V2 catima.csv (after version + blank line).
+
+    >>> zf = zipfile.ZipFile("test/catima1.zip")
+    >>> r = parse(zf)
+    >>> r.groups_keys
+    ['_id']
+    >>> r.cards_keys
+    ['_id', 'store', 'note', 'validfrom', 'expiry', 'balance', 'balancetype', 'cardid', 'barcodeid', 'barcodetype', 'headercolor', 'starstatus', 'lastused', 'archive']
+    >>> r.card_groups_keys
+    ['cardId', 'groupId']
+    >>> r.groups
+    [['one'], ['"two\'']]
+    >>> for c in r.cards: print(c)
+    ['2', 'bar', '', '', '', '0', '', ' bar " ', '', 'CODE_128', '-2092896', '0', '1687700491', '0']
+    ['3', 'baz', '', '', '', '0', '', '12345678901234567890', '', 'DATA_MATRIX', '-14642227', '0', '1687700517', '0']
+    ['1', 'foo', '', '', '', '5', 'JPY', 'foo', '', 'AZTEC', '-2092896', '0', '1687700411', '0']
+    ['4', 'qux', '', '', '', '0', '', 'foo\nbar\nbaz\nhttps://example.com', '', 'QR_CODE', '-14642227', '0', '1687700622', '0']
+    >>> r.card_groups
+    [['2', '"two\''], ['3', '"two\''], ['1', 'one']]
+    >>> r.image_files
+    ['card_2_icon.png', 'card_1_front.png', 'card_1_icon.png']
+
+    >>> zf = zipfile.ZipFile("test/catima2.zip")
+    >>> r = parse(zf)
+    >>> r.groups_keys
+    ['_id']
+    >>> r.cards_keys
+    ['_id', 'store', 'note', 'validfrom', 'expiry', 'balance', 'balancetype', 'cardid', 'barcodeid', 'barcodetype', 'headercolor', 'starstatus', 'lastused', 'archive']
+    >>> r.card_groups_keys
+    ['cardId', 'groupId']
+    >>> r.groups
+    [['one'], ['three']]
+    >>> for c in r.cards: print(c)
+    ['1', 'baz', '', '', '', '0', '', 'foo\nbar\nbaz"', '', 'PDF_417', '-2092896', '0', '1687702090', '0']
+    ['2', 'quux', 'this\nis\na\n"note"\n\nhttps://catima.app', '', '1710370800000', '0', '', '123456789012', '', 'UPC_A', '-416706', '0', '1687700899', '0']
+    >>> r.card_groups
+    [['1', 'one'], ['1', 'three']]
+    >>> r.image_files
+    ['card_1_icon.png', 'card_2_front.png']
+
+    """
     export = ExportV2()
     header = None
     keys = [export.groups_keys, export.cards_keys, export.card_groups_keys]
@@ -187,6 +306,8 @@ def parse_v2(fh: TextIO) -> ExportV2:
             header = row
             keys[0].extend(header)
         elif row:
+            if len(row) != len(header):
+                raise Error("Mismatched row size")
             records[0].append(row)
         else:
             if len(keys) < 2:
@@ -200,7 +321,20 @@ def parse_v2(fh: TextIO) -> ExportV2:
 
 
 def unparse_v2(export: ExportV2) -> str:
-    """Turn V2 export into a catima.csv (str)."""
+    r"""
+    Turn V2 export into a catima.csv (str).
+
+    >>> zf = zipfile.ZipFile("test/catima1.zip")
+    >>> s = unparse_v2(parse(zf)).encode()
+    >>> s == zf.read("catima.csv")
+    True
+
+    >>> zf = zipfile.ZipFile("test/catima2.zip")
+    >>> s = unparse_v2(parse(zf)).encode()
+    >>> s == zf.read("catima.csv")
+    True
+
+    """
     fh = io.StringIO(newline="")
     fh.write("2\r\n")
     keys = [export.groups_keys, export.cards_keys, export.card_groups_keys]

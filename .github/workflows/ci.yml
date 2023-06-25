@@ -35,6 +35,8 @@ jobs:
             contains(matrix.python-version, 'pypy') }}
     - name: Install
       run: make install
+    - name: Doctest
+      run: make doctest
     - name: Lint
       run: make lint
       continue-on-error:
