@@ -107,7 +107,7 @@ def merge_v2(e1: ExportV2, e2: ExportV2, zf1: zipfile.ZipFile, zf2: zipfile.ZipF
               f"{len(e_out.cards):3d} card(s), "
               f"{len(e_out.card_groups):3d} card group(s), "
               f"{len(image_map):3d} image file(s)")
-    print("Writing...")
+        print("Writing...")
     with zipfile.ZipFile(output_zip, "w") as zf_out:
         zf_out.writestr("catima.csv", csv_data)
         for name, (zf, old_name) in image_map.items():
