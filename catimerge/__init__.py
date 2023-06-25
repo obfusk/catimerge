@@ -364,10 +364,8 @@ def main() -> None:
 def gui() -> None:
     import tkinter as tk
     from tkinter import ttk, filedialog, messagebox
-    files: List[Optional[str]] = [None, None, None]
-    nofile = "(no file selected)"
 
-    def select_file(k: int, lbl: ttk.Label, what: str, save: bool = False) -> None:
+    def select_file(i: int, lbl: ttk.Label, what: str, save: bool = False) -> None:
         title = f"Select {what}"
         filetypes = [("ZIP files", "*.zip")]
         if save:
@@ -375,7 +373,7 @@ def gui() -> None:
         else:
             file = filedialog.askopenfilename(title=title, filetypes=filetypes)
         if file:
-            files[k] = file
+            files[i] = file
             lbl.config(text=file)
             if all(files):
                 btn_merge.config(state=tk.NORMAL)
@@ -399,6 +397,8 @@ def gui() -> None:
         else:
             messagebox.showinfo(title="catimerge", message="Saved")
 
+    files: List[Optional[str]] = [None, None, None]
+    nofile = "(no file selected)"
     win = tk.Tk()
     win.title("catimerge")
     btn_open1 = ttk.Button(win, text="Select ZIP #1", command=on_open1)
