@@ -35,7 +35,7 @@ import re
 import zipfile
 
 from dataclasses import dataclass, field, fields
-from typing import Dict, List, TextIO, Tuple
+from typing import Dict, List, Optional, TextIO, Tuple
 
 __version__ = "0.1.0"
 IMAGE_REGEX_V2 = re.compile(r"(card_)(\d+)(_(?:front|back|icon)\.png)")
@@ -359,6 +359,61 @@ def main() -> None:
     args = parser.parse_args()
     catimerge(args.first_zip, args.second_zip, args.output_zip,
               verbose=args.verbose)
+
+
+def gui() -> None:
+    import tkinter as tk
+    from tkinter import ttk, filedialog, messagebox
+    files: List[Optional[str]] = [None, None, None]
+    nofile = "(no file selected)"
+
+    def select_file(k: int, lbl: ttk.Label, what: str, save: bool = False) -> None:
+        title = f"Select {what}"
+        filetypes = [("ZIP files", "*.zip")]
+        if save:
+            file = filedialog.asksaveasfilename(title=title, filetypes=filetypes)
+        else:
+            file = filedialog.askopenfilename(title=title, filetypes=filetypes)
+        if file:
+            files[k] = file
+            lbl.config(text=file)
+            if all(files):
+                btn_merge.config(state=tk.NORMAL)
+
+    def on_open1() -> None:
+        select_file(0, lbl_file1, "ZIP #1")
+
+    def on_open2() -> None:
+        select_file(1, lbl_file2, "ZIP #2")
+
+    def on_open3() -> None:
+        select_file(2, lbl_file3, "output ZIP", save=True)
+
+    def on_merge() -> None:
+        try:
+            first_zip, second_zip, output_zip = files
+            assert first_zip and second_zip and output_zip
+            catimerge(first_zip, second_zip, output_zip)
+        except (Error, zipfile.BadZipFile) as e:
+            messagebox.showerror(title="catimerge", message=f"Error: {e}")
+        else:
+            messagebox.showinfo(title="catimerge", message="Saved")
+
+    win = tk.Tk()
+    win.title("catimerge")
+    btn_open1 = ttk.Button(win, text="Select ZIP #1", command=on_open1)
+    lbl_file1 = ttk.Label(win, text=nofile)
+    btn_open2 = ttk.Button(win, text="Select ZIP #2", command=on_open2)
+    lbl_file2 = ttk.Label(win, text=nofile)
+    btn_open3 = ttk.Button(win, text="Select output ZIP", command=on_open3)
+    lbl_file3 = ttk.Label(win, text=nofile)
+    btn_merge = ttk.Button(win, text="Merge", command=on_merge)
+    btn_merge.config(state=tk.DISABLED)
+    for w in [btn_open1, lbl_file1, btn_open2, lbl_file2, btn_open3, lbl_file3, btn_merge]:
+        w.pack(padx=5, pady=5)
+    win.minsize(400, 250)
+    win.update()
+    win.mainloop()
 
 
 if __name__ == "__main__":

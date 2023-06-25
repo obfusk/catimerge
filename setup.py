@@ -35,7 +35,10 @@ setuptools.setup(
         "Topic :: Utilities",
     ],
     keywords          = "catima export merge",
-    entry_points      = dict(console_scripts = ["catimerge = catimerge:main"]),
+    entry_points      = dict(console_scripts = [
+                            "catimerge = catimerge:main",
+                            "catimerge-gui = catimerge:gui",
+                        ]),
     packages          = ["catimerge"],
     package_data      = dict(catimerge = ["py.typed"]),
     python_requires   = ">=3.8",
