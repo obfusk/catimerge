@@ -47,6 +47,12 @@ Output has   3 group(s),  14 card(s),   5 card group(s),   8 image file(s)
 Writing...
 ```
 
+## GUI
+
+The additional `catimerge-gui` command provides a simple GUI.
+
+![screenshot](gui.png)
+
 ## CAVEATS
 
 Unfortunately, Python does not support the password-protected ZIP
@@ -131,7 +137,13 @@ $ git pull --rebase
 
 ## Dependencies
 
-* Python >= 3.8.
+* Python >= 3.8 (w/ Tk support for the GUI).
+
+### Debian/Ubuntu
+
+```bash
+$ apt install python3-tk
+```
 
 ## License
 
