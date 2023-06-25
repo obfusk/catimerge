@@ -202,12 +202,12 @@ def parse_v2(fh: TextIO) -> ExportV2:
 def unparse_v2(export: ExportV2) -> str:
     """Turn V2 export into a catima.csv (str)."""
     fh = io.StringIO(newline="")
-    fh.write("2\n")
+    fh.write("2\r\n")
     keys = [export.groups_keys, export.cards_keys, export.card_groups_keys]
     records = [export.groups, export.cards, export.card_groups]
     for ks, rs in zip(keys, records):
-        fh.write("\n")
-        writer = csv.writer(fh, lineterminator="\n")
+        fh.write("\r\n")
+        writer = csv.writer(fh, lineterminator="\r\n")
         writer.writerow(ks)
         for r in rs:
             writer.writerow(r)
