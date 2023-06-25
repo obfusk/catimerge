@@ -37,7 +37,7 @@ import zipfile
 from dataclasses import dataclass, field, fields
 from typing import Dict, List, TextIO, Tuple
 
-__version__ = "0.0.1"
+__version__ = "0.1.0"
 IMAGE_REGEX_V2 = re.compile(r"(card_)(\d+)(_(?:front|back|icon)\.png)")
 
 

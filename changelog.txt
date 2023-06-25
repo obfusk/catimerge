@@ -1,0 +1,6 @@
+v0.1.0
+
+• add example .zip files and doctests
+• unparse_v2(): use \r\n, add header & section checks
+• fix print() w/o --verbose
+• README: add 7z example for passwords, show --help
